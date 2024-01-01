@@ -1,0 +1,257 @@
+-- SQLBook: Markup
+## DATA PRE-PROCESSING
+-- SQLBook: Markup
+### STOLEN VEHICLES TABLE
+-- SQLBook: Code
+# RENAME COLUMNS
+ALTER TABLE stolen_vehicles
+RENAME COLUMN ï»¿vehicle_id TO vehicle_id;
+
+# SETUP PRIMARY KEY
+ALTER TABLE stolen_vehicles
+ADD PRIMARY KEY (vehicle_id);
+
+# SETUP FOREIGN KEY
+ALTER TABLE stolen_vehicles
+ADD FOREIGN KEY (make_id) REFERENCES make_details(make_id);
+
+ALTER TABLE stolen_vehicles
+ADD FOREIGN KEY (location_id) REFERENCES locations(location_id);
+-- SQLBook: Code
+# CHECK MISSING VALUES
+SELECT 
+  SUM(CASE WHEN TRIM(vehicle_id) = '' THEN 1 ELSE 0 END) AS missing_vehicle_id,
+  SUM(CASE WHEN TRIM(vehicle_type) = '' THEN 1 ELSE 0 END) AS missing_vehicle_type,
+  SUM(CASE WHEN TRIM(make_id) = '' THEN 1 ELSE 0 END) AS missing_make_id,
+  SUM(CASE WHEN TRIM(model_year) = '' THEN 1 ELSE 0 END) AS missing_model_year,
+  SUM(CASE WHEN TRIM(vehicle_desc) = '' THEN 1 ELSE 0 END) AS missing_vehicle_desc,
+  SUM(CASE WHEN TRIM(color) = '' THEN 1 ELSE 0 END) AS missing_color,
+  SUM(CASE WHEN TRIM(date_stolen) = '' THEN 1 ELSE 0 END) AS missing_date_stolen,
+  SUM(CASE WHEN TRIM(location_id) = '' THEN 1 ELSE 0 END) AS missing_location_id
+FROM stolen_vehicles;
+-- SQLBook: Code
+# CHECK MISSING VALUES BASED ON ROWS
+SELECT *
+FROM stolen_vehicles
+WHERE 
+  TRIM(vehicle_id) = '' OR 
+  TRIM(vehicle_type) = '' OR 
+  TRIM(make_id) = '' OR
+  TRIM(model_year) = '' OR
+  TRIM(vehicle_desc) = '' OR
+  TRIM(color) = '' OR
+  TRIM(date_stolen) = '' OR
+  TRIM(location_id) = '';
+-- SQLBook: Code
+# IDENTIFY MISSING VALUE IN VECHICLE TYPE BASED ON OTHER COLUMNS
+SELECT *
+FROM stolen_vehicles
+WHERE
+  (vehicle_desc = 'ETX 150' AND make_id = 505 AND model_year = 2017 AND color = 'Black') OR
+  (vehicle_desc = 'A8' AND make_id = 507 AND model_year = 2011 AND color = 'Grey') OR
+  (vehicle_desc = '335i' AND make_id = 512 AND model_year = 2009 AND color = 'Black') OR
+  (vehicle_desc = 'TTR125' AND make_id = 550 AND model_year = 2009 AND color = 'Blue') OR
+  (vehicle_desc = 'NQI' AND make_id = 589 AND model_year = 2021 AND color = 'White') OR
+  (vehicle_desc = 'SWIFT' AND make_id = 611 AND model_year = 2014 AND color = 'Red') OR
+  (vehicle_desc = 'JIMNY' AND make_id = 611 AND model_year = 2007 AND color = 'Black') OR
+  (vehicle_desc = '30600' AND make_id = 520 AND model_year = 2005 AND color = 'Yellow') OR
+  (vehicle_desc = 'TRX520FW2M' AND make_id = 550 AND model_year = 2012 AND color = 'Red') OR
+  (vehicle_desc = 'RMZ250' AND make_id = 611 AND model_year = 2010 AND color = 'White') OR
+  (vehicle_desc = 'CRF 100F' AND make_id = 550 AND model_year = 2019 AND color = 'Yellow');
+-- SQLBook: Code
+# UPDATE MISSING VALUES IN VEHICLE TYPE
+UPDATE stolen_vehicles
+SET vehicle_type = 'Hatchback'
+WHERE 
+  make_id = 611 AND
+  model_year = 2014 AND
+  vehicle_desc = 'SWIFT' AND
+  color = 'Red';
+
+UPDATE stolen_vehicles
+SET vehicle_type = 'Unknown'
+WHERE TRIM(vehicle_type) = '';
+-- SQLBook: Code
+# IDENTIFY MISSING VALUE IN VECHICLE DESC BASED ON OTHER COLUMNS
+SELECT *
+FROM stolen_vehicles
+WHERE
+  (vehicle_type = 'Boat Trailer' AND make_id = 623 AND model_year = 1984 AND color = 'Grey') OR
+  (vehicle_type = 'Caravan' AND make_id = 591 AND model_year = 1971 AND color = 'Brown') OR
+  (vehicle_type = 'Caravan' AND make_id = 549 AND model_year = 1972 AND color = 'Brown') OR
+  (vehicle_type = 'Caravan' AND make_id = 637 AND model_year = 1976 AND color = 'White') OR
+  (vehicle_type = 'Caravan' AND make_id = 503 AND model_year = 1976 AND color = 'Cream') OR
+  (vehicle_type = 'Saloon' AND make_id = 633 AND model_year = 1975 AND color = 'Red') OR
+  (vehicle_type = 'Trailer' AND make_id = 623 AND model_year = 1984 AND color = 'Green') OR
+  (vehicle_type = 'Trailer' AND make_id = 623 AND model_year = 1960 AND color = 'Grey') OR
+  (vehicle_type = 'Trailer' AND make_id = 623 AND model_year = 1973 AND color = 'Brown') OR
+  (vehicle_type = 'Trailer' AND make_id = 538 AND model_year = 1992 AND color = 'Blue') OR
+  (vehicle_type = 'Trailer' AND make_id = 549 AND model_year = 1989 AND color = 'Silver') OR
+  (vehicle_type = 'Trailer' AND make_id = 549 AND model_year = 1990 AND color = 'Silver') OR
+  (vehicle_type = 'Trailer' AND make_id = 549 AND model_year = 1990 AND color = 'Black') OR
+  (vehicle_type = 'Trailer' AND make_id = 549 AND model_year = 1993 AND color = 'Silver') OR
+  (vehicle_type = 'Trailer' AND make_id = 549 AND model_year = 1994 AND color = 'Grey') OR
+  (vehicle_type = 'Trailer' AND make_id = 623 AND model_year = 1995 AND color = 'Green') OR
+  (vehicle_type = 'Trailer - Heavy' AND make_id = 549 AND model_year = 1990 AND color = 'Grey') OR
+  (vehicle_type = 'Stationwagon' AND make_id = 555 AND model_year = 1995 AND color = 'Red');
+-- SQLBook: Code
+# UPDATE MISSING VALUES IN VEHICLE DESC
+UPDATE stolen_vehicles
+SET vehicle_desc = 'Unknown'
+WHERE TRIM(vehicle_desc) = '';
+-- SQLBook: Code
+# CHECK DUPLICATED
+SELECT vehicle_id
+FROM stolen_vehicles
+GROUP BY vehicle_id
+HAVING COUNT(*) > 1;
+-- SQLBook: Markup
+### MAKE DETAILS TABLE
+-- SQLBook: Code
+# RENAME COLUMNS
+ALTER TABLE make_details
+RENAME COLUMN ï»¿make_id TO make_id;
+
+# SETUP PRIMARY KEY
+ALTER TABLE make_details
+ADD PRIMARY KEY (make_id);
+-- SQLBook: Code
+# CHECK MISSING VALUES
+SELECT 
+  SUM(CASE WHEN TRIM(make_id) = '' THEN 1 ELSE 0 END) AS missing_vehicle_id,
+  SUM(CASE WHEN TRIM(make_name) = '' THEN 1 ELSE 0 END) AS missing_vehicle_type,
+  SUM(CASE WHEN TRIM(make_type) = '' THEN 1 ELSE 0 END) AS missing_make_id
+FROM make_details;
+-- SQLBook: Code
+# CHECK DUPLICATED
+SELECT make_id
+FROM make_details
+GROUP BY make_id
+HAVING COUNT(*) > 1;
+-- SQLBook: Markup
+## LOCATIONS TABLE
+-- SQLBook: Code
+# RENAME COLUMNS
+ALTER TABLE locations
+RENAME COLUMN ï»¿location_id TO location_id;
+
+# SETUP PRIMARY KEY
+ALTER TABLE locations
+ADD PRIMARY KEY (location_id);
+-- SQLBook: Code
+# CHECK MISSING VALUES
+SELECT 
+  SUM(CASE WHEN TRIM(location_id) = '' THEN 1 ELSE 0 END) AS missing_vehicle_id,
+  SUM(CASE WHEN TRIM(region) = '' THEN 1 ELSE 0 END) AS missing_vehicle_type,
+  SUM(CASE WHEN TRIM(country) = '' THEN 1 ELSE 0 END) AS missing_make_id,
+  SUM(CASE WHEN TRIM(population) = '' THEN 1 ELSE 0 END) AS missing_model_year,
+  SUM(CASE WHEN TRIM(density) = '' THEN 1 ELSE 0 END) AS missing_vehicle_desc
+FROM locations;
+-- SQLBook: Markup
+### CHECK DUPLICATED
+-- SQLBook: Code
+# CHECK DUPLICATED
+SELECT location_id
+FROM locations
+GROUP BY location_id
+HAVING COUNT(*) > 1;
+-- SQLBook: Markup
+## EXPLORATORY DATA ANALYSIS
+-- SQLBook: Code
+# WHAT DAY OF THE WEEK ARE VEHICLES MOST OFTEN AND LEAST OFTEN STOLEN?
+SELECT DATE_FORMAT(STR_TO_DATE(date_stolen, '%m/%d/%y'), '%W') AS Day,
+       COUNT(vehicle_id) AS Total
+FROM stolen_vehicles
+GROUP BY Day
+ORDER BY Total DESC;
+-- SQLBook: Code
+# WHAT TYPES OF VEHICLES ARE MOST OFTEN AND LEAST OFTEN STOLEN? DOES THIS VARY BY REGION?
+WITH RankedVehiclesMax AS (
+  SELECT
+    stolen.vehicle_type,
+    COUNT(stolen.vehicle_id) AS Total,
+    ROW_NUMBER() OVER (PARTITION BY location.region ORDER BY COUNT(stolen.vehicle_id) DESC) AS ranking,
+    location.region
+  FROM stolen_vehicles AS stolen
+  LEFT JOIN locations AS location ON stolen.location_id = location.location_id
+  GROUP BY
+    location.region,
+    stolen.vehicle_type
+),
+RankedVehiclesMin AS (
+  SELECT
+    stolen.vehicle_type,
+    COUNT(stolen.vehicle_id) AS Total,
+    ROW_NUMBER() OVER (PARTITION BY location.region ORDER BY COUNT(stolen.vehicle_id) ASC) AS ranking,
+    location.region
+  FROM stolen_vehicles AS stolen
+  LEFT JOIN locations AS location ON stolen.location_id = location.location_id
+  GROUP BY
+    location.region,
+    stolen.vehicle_type
+)
+SELECT
+  COALESCE(Max.region, Min.region) AS region,
+  'Most Stolen' AS type,
+  Max.vehicle_type AS vehicle_type_max,
+  Max.Total AS total_max,
+  'Least Stolen' AS type_min,
+  Min.vehicle_type AS vehicle_type_min,
+  Min.Total AS total_min
+FROM RankedVehiclesMax Max
+LEFT JOIN RankedVehiclesMin Min ON Max.region = Min.region AND Min.ranking = 1
+WHERE Max.ranking = 1
+ORDER BY
+  region ASC;
+-- SQLBook: Code
+# WHAT IS THE AVERAGE AGE OF THE VEHICLES THAT ARE STOLEN? DOES THIS VARY BASED ON THE VEHICLE TYPE?
+WITH age AS (
+    SELECT
+        vehicle_type,
+        model_year,
+        YEAR(STR_TO_DATE(date_stolen, '%m/%d/%y')) AS stolen_year,
+        COUNT(vehicle_id) AS total
+    FROM stolen_vehicles
+    GROUP BY
+        vehicle_type,
+        model_year,
+        stolen_year
+),
+avg_age AS (
+    SELECT
+        vehicle_type,
+        CONCAT(LPAD(ROUND(AVG(stolen_year - model_year), 0), 2, '0'), ' years') AS age_vehicle,
+        SUM(total) AS total
+    FROM age
+    GROUP BY
+        vehicle_type
+    ORDER BY
+        total DESC,
+        age_vehicle DESC
+)
+SELECT
+    age_vehicle,
+    vehicle_type,
+    total
+FROM avg_age
+ORDER BY age_vehicle ASC;
+-- SQLBook: Code
+# WHICH REGIONS HAVE THE MOST AND LEAST NUMBER OF STOLEN VEHICLES? WHAT ARE THE CHARACTERISTICS OF THE REGIONS?
+WITH RankedVehicles AS (
+  SELECT
+    location.region,
+    location.density,
+    COUNT(stolen.vehicle_id) AS Total
+  FROM stolen_vehicles AS stolen
+  LEFT JOIN locations AS location ON stolen.location_id = location.location_id
+  GROUP BY
+    location.region,
+    location.density
+)
+SELECT
+  region,
+  density,
+  Total
+FROM RankedVehicles
+ORDER BY
+  Total DESC;
